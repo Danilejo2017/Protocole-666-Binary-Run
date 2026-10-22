@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PROTOCOLO 666 — Binary Run</title>
+<style>
+:root{color-scheme:dark;--bg:#080c14;--panel:#111a27;--line:#25364a;--cyan:#53f5e8;--green:#a5ffb5;--red:#ff334f;--muted:#8da3b8}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 50% 0%,#14273a 0,var(--bg) 65%);color:#eaf7ff;font:16px/1.5 ui-monospace,SFMono-Regular,Consolas,monospace;min-height:100vh}
+main{width:min(760px,100%);margin:auto;padding:24px 16px 48px}.eyebrow{color:var(--cyan);letter-spacing:.22em;font-size:.72rem;text-align:center}
+h1{text-align:center;line-height:1.05;font-size:clamp(2rem,8vw,4rem);margin:8px 0;color:#f2fbff;letter-spacing:.04em}h1 span{color:var(--cyan)}.sub{text-align:center;color:var(--muted);margin:0 0 24px}
+.panel{border:1px solid var(--line);background:rgba(17,26,39,.92);border-radius:14px;padding:18px;margin:14px 0;box-shadow:0 12px 40px #0004}
+.topline{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;color:var(--muted);font-size:.8rem}.status{color:var(--green)}
+.stage{display:grid;grid-template-columns: minmax(130px, .8fr) 1.2fr;gap:18px;align-items:center}
+.robot-wrap{display:flex;justify-content:center;align-items:center;min-height:190px}.robot{width:150px;max-width:100%;overflow:visible;filter:drop-shadow(0 0 13px #53f5e82b)}
+.robot .arm{transform-box:fill-box;transform-origin:top center}.robot .eyes{fill:var(--cyan)}.robot .core{fill:#173f4b;stroke:var(--cyan)}
+@keyframes tremble{0%,100%{transform:rotate(0)}20%{transform:rotate(-20deg) translateY(-3px)}40%{transform:rotate(22deg)}60%{transform:rotate(-17deg) translateY(-2px)}80%{transform:rotate(16deg)}}
+@keyframes panic{0%,100%{transform:translateX(0)}25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+.panic .arm{animation:tremble .13s infinite}.panic .robot{animation:panic .1s infinite}.overheat .robot{filter:drop-shadow(0 0 18px #ff334f99)}.overheat .eyes,.overheat .core{fill:var(--red);stroke:var(--red)}
+@keyframes explode{0%{transform:scale(1) rotate(0);opacity:1;filter:drop-shadow(0 0 8px #ff334f)}35%{transform:scale(1.35) rotate(12deg);opacity:1;filter:drop-shadow(0 0 35px #ff334f)}70%{transform:scale(1.8) rotate(-18deg);opacity:.65;filter:drop-shadow(0 0 55px #ff9d3d)}100%{transform:scale(2.3) rotate(25deg);opacity:0;filter:drop-shadow(0 0 70px #ff334f)}}
+.exploding .robot{animation:explode .85s ease-out forwards}.explosion-flash{position:fixed;inset:0;z-index:50;pointer-events:none;background:radial-gradient(circle,#fff 0%,#ffb52e 12%,#ff334f 32%,transparent 68%);animation:flash .8s ease-out forwards}@keyframes flash{0%{opacity:0}15%{opacity:.95}100%{opacity:0}}
+.metric{border-bottom:1px solid var(--line);padding:9px 0}.metric:last-child{border:0}.metric small{display:block;color:var(--muted);font-size:.72rem;letter-spacing:.12em}.metric strong{font-size:1.35rem;color:var(--cyan);overflow-wrap:anywhere}.timer{font-size:2.3rem!important;letter-spacing:.05em}
+.rules{color:#c1d0df;font-size:.88rem}.rules strong{color:var(--cyan)}.danger{color:var(--red)!important}
+.state-green{color:#68ff91!important}.state-orange{color:#ff9d3d!important}
+.robot.state-green .eyes,.robot.state-green .core{fill:#68ff91;stroke:#68ff91}
+.robot.state-orange .eyes,.robot.state-orange .core{fill:#ff9d3d;stroke:#ff9d3d}
+.robot.state-green{filter:drop-shadow(0 0 14px #68ff9166)}.robot.state-orange{filter:drop-shadow(0 0 14px #ff9d3d66)}
+label{display:block;font-size:.78rem;color:var(--muted);margin-bottom:8px;letter-spacing:.12em}
+input{width:100%;padding:15px 12px;background:#070d15;border:1px solid #35506a;border-radius:8px;color:var(--cyan);font:700 1.35rem ui-monospace,monospace;letter-spacing:.16em;outline:none}input:focus{border-color:var(--cyan);box-shadow:0 0 0 3px #53f5e81a}input:disabled{opacity:.65}
+button{border:0;border-radius:8px;background:var(--cyan);color:#061114;font:800 .95rem ui-monospace,monospace;padding:13px 16px;cursor:pointer;width:100%;margin-top:10px}button:disabled{opacity:.4;cursor:not-allowed}
+.feedback{min-height:52px;margin-top:12px;color:var(--muted);font-size:.9rem}.feedback strong{color:var(--green)}.feedback.fail{color:var(--red)}
+footer{text-align:center;color:#61768a;font-size:.72rem;margin-top:24px}
+@media(max-width:500px){.stage{grid-template-columns:110px 1fr;gap:10px}.robot-wrap{min-height:150px}.panel{padding:14px}.timer{font-size:1.8rem!important}}
+</style>
+</head>
+<body><main id="app">
+<div class="eyebrow">SISTEMA DE ENTRENAMIENTO // BUILD 01</div>
+<h1>PROTOCOLO <span>666</span></h1>
+<p class="sub">BINARY RUN — un intento. Diez bits. Quince segundos.</p>
+<section class="panel">
+<div class="topline"><span>● UNIDAD ROBÓTICA R-10</span><span id="status" class="status">SISTEMA ESTABLE</span></div>
+<div class="stage">
+<div class="robot-wrap" id="robotWrap">
+<svg class="robot" viewBox="0 0 180 210" role="img" aria-label="Robot de entrenamiento">
+<ellipse cx="90" cy="196" rx="49" ry="7" fill="#0008"/>
+<g class="arm" id="leftArm"><rect x="24" y="93" width="25" height="58" rx="12" fill="#8298ac" stroke="#d0e5f4" stroke-width="3"/><circle cx="36" cy="154" r="12" fill="#263d52" stroke="#53f5e8" stroke-width="3"/><path d="M27 165 L24 180 L34 184 L40 171 L47 182 L55 176 L45 159" fill="#8298ac" stroke="#d0e5f4" stroke-width="3" stroke-linejoin="round"/></g>
+<g class="arm" id="rightArm"><rect x="131" y="93" width="25" height="58" rx="12" fill="#8298ac" stroke="#d0e5f4" stroke-width="3"/><circle cx="144" cy="154" r="12" fill="#263d52" stroke="#53f5e8" stroke-width="3"/><path d="M135 165 L132 180 L142 184 L148 171 L155 182 L163 176 L153 159" fill="#8298ac" stroke="#d0e5f4" stroke-width="3" stroke-linejoin="round"/></g>
+<rect x="48" y="55" width="84" height="105" rx="20" fill="#8298ac" stroke="#d0e5f4" stroke-width="4"/>
+<rect x="57" y="66" width="66" height="43" rx="10" fill="#07131e" stroke="#53f5e8" stroke-width="2"/>
+<g class="eyes"><rect x="68" y="80" width="12" height="15" rx="4"/><rect x="100" y="80" width="12" height="15" rx="4"/></g>
+<path d="M76 124 Q90 134 104 124" stroke="#d0e5f4" stroke-width="3" fill="none" stroke-linecap="round"/>
+<circle class="core" cx="90" cy="146" r="7" stroke-width="3"/>
+<path d="M90 55 V43 M77 42 H103" stroke="#d0e5f4" stroke-width="4" stroke-linecap="round"/><circle cx="90" cy="35" r="9" fill="#53f5e8"/>
+<rect x="61" y="161" width="24" height="20" rx="6" fill="#8298ac" stroke="#d0e5f4" stroke-width="3"/><rect x="95" y="161" width="24" height="20" rx="6" fill="#8298ac" stroke="#d0e5f4" stroke-width="3"/>
+<rect x="54" y="180" width="39" height="13" rx="5" fill="#405b70"/><rect x="87" y="180" width="39" height="13" rx="5" fill="#405b70"/>
+</svg>
+</div>
+<div>
+<div class="metric"><small>TIEMPO RESTANTE</small><strong id="timer" class="timer">15.0 s</strong></div>
+<div class="metric"><small>RESULTADO DECIMAL</small><strong id="decimal">—</strong><div id="comparison" class="feedback" aria-live="polite">Introduce un código para comparar.</div></div>
+<div class="metric"><small>INTENTO</small><strong id="attempt">Intento 1</strong></div>
+</div>
+</div>
+</section>
+<section class="panel rules">
+<strong>OBJETIVO:</strong> introduce exactamente 10 dígitos binarios (0 y 1). El valor decimal se calcula al escribir.<br>
+<strong>EVITA EL NÚMERO DECIMAL 666.</strong><br>
+Cada ronda dura 15 segundos. Los intentos continúan automáticamente cada 2 segundos. El sonido se activa al interactuar con la página. Este prototipo no usa cámara ni rastrea tu identidad.
+</section>
+<section class="panel" id="gamePanel">
+<label for="binary">ENTRADA BINARIA // 10 BITS EXACTOS</label>
+<input id="binary" type="text" inputmode="numeric" autocomplete="off" autocapitalize="off" spellcheck="false" maxlength="10" placeholder="0101010101" aria-describedby="feedback">
+<button id="submit" disabled>CONFIRMAR CÓDIGO</button>
+<div id="feedback" class="feedback" aria-live="polite">Esperando entrada… El reloj comienza al escribir.</div>
+</section>
+<footer>SIMULACIÓN LOCAL · Rondas automáticas e infinitas. No recopila datos personales ni utiliza la cámara.</footer>
+</main>
+<script>
+(() => {
+const input=document.getElementById('binary'),timer=document.getElementById('timer'),decimal=document.getElementById('decimal'),comparison=document.getElementById('comparison'),feedback=document.getElementById('feedback'),submit=document.getElementById('submit'),status=document.getElementById('status'),app=document.getElementById('app'),wrap=document.getElementById('robotWrap');
+let ended=false,startAt=performance.now(),clock=null,roundTimer=null,audioCtx=null,lastToneState='',attemptNumber=1;
+function tone(freq=440,duration=.12,type='sine',gain=.045){
+ try{
+  audioCtx=audioCtx||new (window.AudioContext||window.webkitAudioContext)();
+  if(audioCtx.state==='suspended')audioCtx.resume();
+  const osc=audioCtx.createOscillator(),vol=audioCtx.createGain();
+  osc.type=type;osc.frequency.setValueAtTime(freq,audioCtx.currentTime);
+  vol.gain.setValueAtTime(gain,audioCtx.currentTime);
+  vol.gain.exponentialRampToValueAtTime(.001,audioCtx.currentTime+duration);
+  osc.connect(vol);vol.connect(audioCtx.destination);osc.start();osc.stop(audioCtx.currentTime+duration);
+ }catch(e){}
+}
+function sound(kind){
+ if(kind==='safe'){tone(660,.08,'triangle');}
+ else if(kind==='caution'){tone(330,.1,'sawtooth');}
+ else if(kind==='win'){tone(523,.12,'triangle');setTimeout(()=>tone(659,.12,'triangle'),110);setTimeout(()=>tone(784,.18,'triangle'),220);}
+ else if(kind==='fail'){tone(180,.35,'sawtooth',.07);setTimeout(()=>tone(110,.5,'sawtooth',.06),220);}
+ else if(kind==='timeout'){tone(260,.18,'square');setTimeout(()=>tone(190,.22,'square'),160);}
+ else if(kind==='start'){tone(440,.08,'triangle');}
+}
+function tick(){const left=Math.max(0,15000-(performance.now()-startAt));timer.textContent=(left/1000).toFixed(1)+' s';if(left<=0)finish('timeout','<strong>TIEMPO AGOTADO.</strong> Esta ronda terminó.');}
+function finish(kind,message){
+ if(ended)return;ended=true;clearInterval(clock);clearTimeout(roundTimer);input.disabled=true;submit.disabled=true;
+ feedback.innerHTML=message;feedback.classList.toggle('fail',kind==='fail');
+ sound(kind==='fail'?'fail':kind==='ok'?'win':'timeout');
+ if(kind==='fail'){
+  status.textContent='EXPLOSIÓN CRÍTICA';status.classList.add('danger');wrap.classList.add('panic','overheat','exploding');app.classList.add('overheat');
+  const flash=document.createElement('div');flash.className='explosion-flash';document.body.appendChild(flash);
+  feedback.innerHTML='<strong>¡666 DETECTADO! EL ROBOT HA EXPLOTADO.</strong>';
+  setTimeout(()=>{document.body.innerHTML='<main style="min-height:100vh;display:grid;align-content:center;text-align:center;padding:24px;color:#ff334f;background:radial-gradient(ellipse at center,#35111b,#080c14 70%)"><div style="font-size:.8rem;letter-spacing:.2em">PROTOCOLO 666 // ERROR CRÍTICO</div><h1 style="font-size:clamp(3rem,12vw,6rem);margin:16px 0">GAME OVER</h1><p style="font-size:1.1rem">🤖💥 ROBOT DESTRUIDO</p><p style="color:#8da3b8">El código decimal 666 activó la explosión.</p><p style="color:#8da3b8">Intento '+attemptNumber+' · Simulación terminada</p><button onclick="location.reload()" style="padding:14px;background:#ff334f;border:0;border-radius:8px;font-weight:bold;cursor:pointer">REINICIAR SIMULACIÓN</button></main>';},850);
+  return;
+ }
+ else if(kind==='ok'){status.textContent='RONDA SUPERADA';status.classList.remove('danger');}
+ else {status.textContent='RONDA FINALIZADA';status.classList.remove('danger');}
+ feedback.innerHTML += '<div style="margin-top:8px">Siguiente intento automático en 2 segundos…</div>';
+ roundTimer=setTimeout(newRound,2000);
+}
+function newRound(){
+ ended=false;attemptNumber++;document.getElementById('attempt').textContent='Intento '+attemptNumber;lastToneState='';startAt=performance.now();clearInterval(clock);clearTimeout(roundTimer);clock=setInterval(tick,50);
+ input.disabled=false;input.value='';decimal.textContent='—';timer.textContent='15.0 s';
+ comparison.textContent='Introduce un código para comparar.';comparison.className='feedback';
+ feedback.textContent='Nueva ronda iniciada. ¡Escribe 10 bits!';feedback.classList.remove('fail');
+ submit.disabled=true;status.textContent='SISTEMA ESTABLE';status.classList.remove('danger');
+ wrap.classList.remove('panic','overheat');app.classList.remove('overheat');
+ const robot=wrap.querySelector('.robot');robot.classList.remove('state-green','state-orange');
+ input.focus();sound('start');
+}
+clock=setInterval(tick,50);
+input.addEventListener('input',()=>{
+ const cleaned=input.value.replace(/[^01]/g,'').slice(0,10);
+ if(input.value!==cleaned)input.value=cleaned;
+ if(cleaned.length){
+   const value=parseInt(cleaned,2);decimal.textContent=value.toString(10);
+   const robot=wrap.querySelector('.robot');robot.classList.remove('state-green','state-orange');
+   comparison.classList.remove('state-green','state-orange');
+   if(value<666){comparison.textContent='MENOR A 666 — zona segura.';comparison.classList.add('state-green');robot.classList.add('state-green');if(lastToneState!=='safe'){sound('safe');lastToneState='safe';}}
+   else if(value>666){comparison.textContent='MAYOR A 666 — precaución.';comparison.classList.add('state-orange');robot.classList.add('state-orange');if(lastToneState!=='caution'){sound('caution');lastToneState='caution';}}
+   else {comparison.textContent='¡PELIGRO! Has encontrado el 666.';comparison.className='feedback danger';if(lastToneState!=='danger'){sound('fail');lastToneState='danger';}}
+ }else{decimal.textContent='—';comparison.textContent='Introduce un código para comparar.';comparison.className='feedback';lastToneState='';}
+ submit.disabled=cleaned.length!==10||ended;
+ feedback.textContent=cleaned.length===10?'Código completo. Confirma antes de que termine el tiempo.':`Bits introducidos: ${cleaned.length}/10`;
+});
+submit.addEventListener('click',()=>{
+ if(ended||input.value.length!==10)return;
+ if(parseInt(input.value,2)===666){finish('fail','<strong>¡666 DETECTADO!</strong> El robot explota…');}
+ else finish('ok','<strong>¡RONDA SUPERADA!</strong> Código aceptado.');
+});
+input.addEventListener('keydown',e=>{if(e.key==='Enter'&&!submit.disabled)submit.click();if((e.ctrlKey||e.metaKey)&&['v','x','z'].includes(e.key.toLowerCase()))e.preventDefault();});
+input.addEventListener('paste',e=>e.preventDefault());input.addEventListener('drop',e=>e.preventDefault());
+input.addEventListener('contextmenu',e=>e.preventDefault());
+document.addEventListener('visibilitychange',()=>{if(document.hidden&&!ended){finish('timeout','<strong>SEÑAL INTERRUMPIDA.</strong> La ronda se ha cancelado.');}});
+})();
+</script></body></html>
